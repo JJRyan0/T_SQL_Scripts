@@ -261,7 +261,22 @@ WHERE e.salary > (
     WHERE department_id = e.department_id
 );
 
--- 7. Pivot by gender
+-- cte version much preferred method
+--- employees earning more than department average 
+-- Note the salary data type is decimal (10,2) however its beneficial to always cast to decimal 10, 2 when using round function
+
+with dept_avg_cte as (
+    select department_id, cast(round(avg(salary), 2) as decimal(10,2)) as dept_avg
+    from Employees
+    group by department_id
+)
+select e.first_name, e.last_name, e.salary, da.dept_avg
+from Employees e
+inner join dept_avg_cte da
+on e.department_id = da.department_id
+where e.salary > da.dept_avg;
+
+-- 7. pivot data by a categorical column such as Pivot by a gender
 SELECT department_id,
        SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS male_count,
        SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS female_count
