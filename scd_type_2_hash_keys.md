@@ -3,6 +3,8 @@
 This project demonstrates how to use SQL Server's `MERGE` statement with a **row hash** to manage **Slowly Changing Dimensions (SCD Type 2)**. 
 It tracks changes to employee records, ensuring historical accuracy and efficiently identifying new and changed rows in a data warehouse.
 
+[Full SQL script here] (https://github.com/JJRyan0/T_SQL_Scripts/blob/main/scd_type_2_hash_key.sql)
+
 ---
 
 ## Project Overview
