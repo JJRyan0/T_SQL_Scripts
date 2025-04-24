@@ -330,43 +330,43 @@ WHERE MONTH(sale_date) = MONTH(GETDATE())
 GROUP BY product_id;
 
 -- 16. Month-over-month revenue growth
-WITH monthly_rev AS (
-    SELECT 
-        FORMAT(order_date, 'yyyy-MM') AS month,
-        SUM(sale_amount) AS monthly_revenue
-    FROM orders
-    GROUP BY FORMAT(order_date, 'yyyy-MM')
+with month_rev as (
+    select 
+        month(order_date) as month,
+        coalesce(sum(order_amount),0) as monthly_revenue
+    from orders
+    group by month(order_date)
 )
-SELECT 
+select 
     month,
     monthly_revenue,
-    LAG(monthly_revenue) OVER(ORDER BY month) AS previous_month_revenue,
-    ROUND(
-        (monthly_revenue - LAG(monthly_revenue) OVER(ORDER BY month)) * 100.0 /
-        NULLIF(LAG(monthly_revenue) OVER(ORDER BY month), 0),
-    2) AS revenue_growth_percent
-FROM monthly_rev;
+    coalesce(lag(monthly_revenue) over(order by month),0) as previous_month_revenue,
+    coalesce(round(monthly_revenue - lag(monthly_revenue) over(order by month) * 100 / 
+    nullif(lag(monthly_revenue) over(order by month),0), 2), 0) as revenue_growth_percent
+from month_rev;
 
--- Year-over-Year growth
-WITH YearlyRevenue AS (
-    SELECT 
-        FORMAT(order_date, 'yyyy-MM') AS month,
-        YEAR(order_date) AS year,
-        SUM(order_total) AS yearly_revenue
-    FROM orders
-    GROUP BY FORMAT(order_date, 'yyyy-MM'), YEAR(order_date)
+
+-- year over year revenue growth
+
+-- revenue growth % = (year revenue - previous year revenue X 100) / previous year revenue
+
+with y_o_y_rev as (
+    select 
+        year(order_date) as year,
+        coalesce(sum(order_amount),0) as yearly_revenue
+    from orders
+    group by year(order_date)
 )
-SELECT 
-    month,
+
+select 
     year,
-    yearly_revenue,
-    LAG(yearly_revenue) OVER (PARTITION BY FORMAT(order_date, 'MM') ORDER BY year) AS prev_year_revenue,
-    ROUND(
-        (yearly_revenue - LAG(yearly_revenue) OVER (PARTITION BY FORMAT(order_date, 'MM') ORDER BY year)) * 100.0 /
-        NULLIF(LAG(yearly_revenue) OVER (PARTITION BY FORMAT(order_date, 'MM') ORDER BY year), 0),
-    2
-    ) AS yoy_growth_percentage
-FROM YearlyRevenue;
+   coalesce(lag(yearly_revenue) over(order by year),0) as previous_year_revenue,
+   coalesce(round(yearly_revenue - lag(yearly_revenue) over(order by year) * 100 /
+   nullif(lag(yearly_revenue) over(order by year),0)
+        ,2)
+    ,0) as revenue_growth_percent
+from y_o_y_rev;
+
 
 -- Products with increasing monthly sales
 WITH product_sales_cte AS (
