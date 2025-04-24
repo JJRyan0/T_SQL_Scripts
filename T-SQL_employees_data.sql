@@ -284,7 +284,7 @@ FROM employees
 GROUP BY department_id;
 
 -- 8. Top 5 customers by purchases
-SELECT TOP 5 customer_id, SUM(order_total) AS total_spent
+SELECT TOP 5 customer_id, SUM(order_amount) AS total_spent
 FROM orders
 GROUP BY customer_id
 ORDER BY total_spent DESC;
